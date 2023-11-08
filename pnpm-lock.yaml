@@ -6,7 +6,7 @@ settings:
 
 dependencies:
   solid-js:
-    specifier: ^1.7.8
+    specifier: ^1.8.5
     version: 1.8.5
 
 devDependencies:
@@ -35,13 +35,13 @@ devDependencies:
     specifier: ^3.3.5
     version: 3.3.5
   typescript:
-    specifier: ^5.0.2
+    specifier: ^5.2.2
     version: 5.2.2
   vite:
-    specifier: ^4.4.5
+    specifier: ^4.5.0
     version: 4.5.0
   vite-plugin-solid:
-    specifier: ^2.7.0
+    specifier: ^2.7.2
     version: 2.7.2(solid-js@1.8.5)(vite@4.5.0)
 
 packages:
