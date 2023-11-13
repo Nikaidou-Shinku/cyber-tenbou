@@ -7,7 +7,7 @@ import { Home, Room } from "~/pages";
 export default () => {
   onMount(async () => {
     // TODO: maybe don't hard code the url
-    const ns = await connect({ servers: "ws://106.14.154.205:4223" });
+    const ns = await connect({ servers: "wss://tenbou.yurzhang.com/ws" });
     setState("server", () => ns);
     console.info(`Connected to ${ns.getServer()}.`);
   });

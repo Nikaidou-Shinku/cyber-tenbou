@@ -1,10 +1,11 @@
-import { createSignal } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import { Portal, Show } from "solid-js/web";
 import { JSONCodec } from "nats.ws";
 import { PayMsg } from "~/data/interfaces";
 import { state } from "~/state";
 
 interface PlayerProps {
+  container?: HTMLDivElement;
   topic: string;
   username: string;
   tenbou: number;
@@ -13,6 +14,16 @@ interface PlayerProps {
 const sc = JSONCodec();
 
 export default (props: PlayerProps) => {
+  const [ref, setRef] = createSignal<HTMLInputElement>();
+
+  createEffect(() => {
+    const curRef = ref();
+
+    if (typeof curRef !== "undefined") {
+      curRef.focus();
+    }
+  });
+
   const [showPay, setShowPay] = createSignal(false);
   const [value, setValue] = createSignal("");
 
@@ -109,7 +120,7 @@ export default (props: PlayerProps) => {
         <span class="text-sm">00 点</span>
       </div>
       <Show when={showPay()}>
-        <Portal>
+        <Portal mount={props.container}>
           <div class="fixed bottom-0 left-0 right-0 top-0 flex items-center justify-center backdrop-blur-sm">
             <form
               class="flex w-4/5 max-w-5xl flex-col items-center space-y-6 rounded bg-white p-4 shadow"
@@ -120,6 +131,7 @@ export default (props: PlayerProps) => {
             >
               <span class="text-xl">向 {props.username} 支付点棒</span>
               <input
+                ref={setRef}
                 class="w-full rounded-sm border px-2 py-1"
                 placeholder="支付的点棒数"
                 type="number"
