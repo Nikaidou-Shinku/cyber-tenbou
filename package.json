@@ -1,7 +1,7 @@
 {
   "name": "cyber-tenbou",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,16 +10,20 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@solidjs/router": "^0.9.1",
+    "nats.ws": "^1.19.1",
     "solid-js": "^1.8.5"
   },
   "devDependencies": {
+    "@types/node": "^20.9.0",
     "autoprefixer": "^10.4.16",
     "cssnano": "^6.0.1",
     "husky": "^8.0.3",
-    "lint-staged": "^15.0.2",
+    "lint-staged": "^15.1.0",
     "postcss": "^8.4.31",
     "prettier": "^3.0.3",
-    "prettier-plugin-tailwindcss": "^0.5.6",
+    "prettier-plugin-tailwindcss": "^0.5.7",
+    "solid-devtools": "^0.28.1",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
