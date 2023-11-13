@@ -2,7 +2,7 @@ import { onCleanup, onMount } from "solid-js";
 import { Routes, Route } from "@solidjs/router";
 import { connect } from "nats.ws";
 import { setState, state } from "~/state";
-import { Home, Lobby } from "~/pages";
+import { Home, Room } from "~/pages";
 
 export default () => {
   onMount(async () => {
@@ -23,7 +23,7 @@ export default () => {
 
   return (
     <Routes>
-      <Route path="/lobby" component={Lobby} />
+      <Route path="/room/:name" component={Room} />
       <Route path="/" component={Home} />
     </Routes>
   );
