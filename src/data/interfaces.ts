@@ -1,6 +1,7 @@
 export interface JoinRoomMsg {
   type: "join";
   username: string;
+  tenbou: number;
 }
 
 export interface ExistMsg {

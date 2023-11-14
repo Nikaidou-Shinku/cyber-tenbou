@@ -2,6 +2,7 @@ import { createEffect, createSignal } from "solid-js";
 import { Portal, Show } from "solid-js/web";
 import { JSONCodec } from "nats.ws";
 import { PayMsg } from "~/data/interfaces";
+import { checkTenbou } from "~/utils";
 import { state } from "~/state";
 
 interface PlayerProps {
@@ -41,21 +42,8 @@ export default (props: PlayerProps) => {
   const pay = () => {
     const raw = value().trim();
 
-    if (raw === "") {
-      alert("填点东西啊兄弟。");
-      return;
-    }
-
-    let tenbou;
-    try {
-      tenbou = parseInt(raw);
-    } catch (error) {
-      alert("你家点棒还能不是整数的吗。");
-      return;
-    }
-
-    if (tenbou % 100 !== 0) {
-      alert("你家点棒还能不是整百地给的吗。");
+    const tenbou = checkTenbou(raw);
+    if (tenbou === null) {
       return;
     }
 
@@ -65,7 +53,7 @@ export default (props: PlayerProps) => {
     }
 
     const ask = confirm(
-      `即将向 ${props.username} 支付 ${tenbou} 点点棒，确认吗？`,
+      `即将向 ${props.username} 支付 ${tenbou * 100} 点点棒，确认吗？`,
     );
 
     if (ask) {
@@ -89,7 +77,7 @@ export default (props: PlayerProps) => {
         type: "pay",
         from: username,
         to: props.username,
-        value: tenbou / 100,
+        value: tenbou,
       };
 
       nc.publish(props.topic, sc.encode(payMsg));
@@ -115,9 +103,14 @@ export default (props: PlayerProps) => {
         </Show>
         <span>{props.username}</span>
       </div>
-      <div>
+      <div classList={{ "text-red-500": props.tenbou < 0 }}>
         <span class="text-xl">{props.tenbou}</span>
-        <span class="text-sm">00 点</span>
+        <Show
+          when={props.tenbou !== 0}
+          fallback={<span class="text-sm"> 点</span>}
+        >
+          <span class="text-sm">00 点</span>
+        </Show>
       </div>
       <Show when={showPay()}>
         <Portal mount={props.container}>

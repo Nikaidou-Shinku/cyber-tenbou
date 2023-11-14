@@ -3,7 +3,7 @@ import { createStore } from "solid-js/store";
 import { useNavigate, useParams } from "@solidjs/router";
 import { JSONCodec } from "nats.ws";
 import { ExistMsg, JoinRoomMsg, Msg } from "~/data/interfaces";
-import { state } from "~/state";
+import { setState, state } from "~/state";
 import { isFullscreen } from "~/utils";
 import Player from "./Player";
 
@@ -51,6 +51,7 @@ export default () => {
     const joinMsg: JoinRoomMsg = {
       type: "join",
       username,
+      tenbou: state.tenbou,
     };
 
     nc.publish(topic, sc.encode(joinMsg));
@@ -60,13 +61,13 @@ export default () => {
 
       switch (res.type) {
         case "join": {
-          setPlayers(res.username, () => 250);
+          setPlayers(res.username, () => res.tenbou);
 
           if (res.username !== username) {
             const existMsg: ExistMsg = {
               type: "exist",
               username,
-              tenbou: players[username],
+              tenbou: state.tenbou,
             };
 
             nc.publish(topic, sc.encode(existMsg));
@@ -83,6 +84,15 @@ export default () => {
         case "pay": {
           setPlayers(res.from, (prev) => prev - res.value);
           setPlayers(res.to, (prev) => prev + res.value);
+
+          if (res.from === username) {
+            setState("tenbou", (prev) => prev - res.value);
+          }
+
+          if (res.to === username) {
+            setState("tenbou", (prev) => prev + res.value);
+          }
+
           break;
         }
       }
@@ -95,7 +105,7 @@ export default () => {
       class="flex h-[100dvh] flex-col items-center justify-center space-y-3 bg-gray-200"
     >
       <div class="flex space-x-4">
-        <span class="text-2xl">Room {params.name}</span>
+        <span class="text-2xl">Room {decodeURIComponent(params.name)}</span>
         <Show when={!isFs()}>
           <button
             class="rounded-sm bg-green-400 px-2 py-1 text-white shadow-sm transition-colors hover:bg-green-500 focus:bg-green-500 active:bg-green-600"
