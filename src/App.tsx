@@ -46,6 +46,9 @@ export default () => {
             </span>
           </Show>
         </div>
+        <div class="fixed bottom-2 left-0 right-0 flex justify-center">
+          <span>当前版本：v0.1.2</span>
+        </div>
       </Portal>
     </>
   );
