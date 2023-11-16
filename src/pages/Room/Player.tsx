@@ -4,7 +4,7 @@ import { state } from "~/state";
 import PayModal from "./PayModal";
 
 interface PlayerProps {
-  topic: string;
+  roomName: string;
   username: string;
   tenbou: number;
 }
@@ -53,7 +53,7 @@ export default (props: PlayerProps) => {
       <Show when={showPay()}>
         <PayModal
           username={props.username}
-          topic={props.topic}
+          roomName={props.roomName}
           closeModal={() => setShowPay(false)}
         />
       </Show>

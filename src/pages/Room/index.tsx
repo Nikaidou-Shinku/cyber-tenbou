@@ -1,11 +1,18 @@
 import { For, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useNavigate, useParams } from "@solidjs/router";
-import { ExistMsg, JoinRoomMsg, Msg } from "~/data/interfaces";
-import { setState, state } from "~/state";
+import { state } from "~/state";
 import Player from "./Player";
 
 type PlayerList = Record<string, number>;
+
+// FIXME: 笑死，留了俩后门在这儿🤣
+declare global {
+  interface Window {
+    restartGame: () => Promise<void>;
+    setTenbou: (username: string, tenbou: number) => Promise<void>;
+  }
+}
 
 export default () => {
   const navigate = useNavigate();
@@ -37,58 +44,36 @@ export default () => {
       return;
     }
 
-    const topic = `room.${roomName}`;
+    const js = nc.jetstream();
+    const kv = await js.views.kv("tenbou");
 
-    const sub = nc.subscribe(topic);
+    const iter = await kv.watch({ key: `${roomName}.*` });
 
-    const joinMsg: JoinRoomMsg = {
-      type: "join",
-      username,
-      tenbou: state.tenbou,
+    const self = await kv.get(`${roomName}.${username}`);
+    if (self === null) {
+      await kv.put(`${roomName}.${username}`, "250");
+    }
+
+    // FIXME: remove these
+    window.restartGame = async () => {
+      await kv.destroy();
+      console.info("Ok");
     };
 
-    nc.publish(topic, JSON.stringify(joinMsg));
-
-    for await (const m of sub) {
-      const res: Msg = m.json();
-
-      switch (res.type) {
-        case "join": {
-          setPlayers(res.username, () => res.tenbou);
-
-          if (res.username !== username) {
-            const existMsg: ExistMsg = {
-              type: "exist",
-              username,
-              tenbou: state.tenbou,
-            };
-
-            nc.publish(topic, JSON.stringify(existMsg));
-          }
-
-          break;
-        }
-
-        case "exist": {
-          setPlayers(res.username, () => res.tenbou);
-          break;
-        }
-
-        case "pay": {
-          setPlayers(res.from, (prev) => prev - res.value);
-          setPlayers(res.to, (prev) => prev + res.value);
-
-          if (res.from === username) {
-            setState("tenbou", (prev) => prev - res.value);
-          }
-
-          if (res.to === username) {
-            setState("tenbou", (prev) => prev + res.value);
-          }
-
-          break;
-        }
+    window.setTenbou = async (username: string, tenbou: number) => {
+      if (tenbou % 100 !== 0) {
+        console.error("点棒数必须是 100 的倍数！");
+        return;
       }
+
+      await kv.put(`${roomName}.${username}`, `${tenbou / 100}`);
+      console.info("Ok");
+    };
+
+    for await (const e of iter) {
+      const name = e.key.split(".")[1];
+      const value = parseInt(e.string());
+      setPlayers(name, () => value);
     }
   });
 
@@ -101,7 +86,7 @@ export default () => {
         <For each={Object.entries(players).sort(([_a, a], [_b, b]) => b - a)}>
           {([username, tenbou]) => (
             <Player
-              topic={`room.${params.name.trim()}`}
+              roomName={params.name.trim()}
               username={username}
               tenbou={tenbou}
             />

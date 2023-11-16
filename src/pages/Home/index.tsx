@@ -1,11 +1,9 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { setState } from "~/state";
-import { checkTenbou } from "~/utils";
 
 export default () => {
   const navigate = useNavigate();
-  const [tenbou, setTenbou] = createSignal("25000");
   const [username, setUsername] = createSignal("");
   const [roomName, setRoomName] = createSignal("");
 
@@ -29,13 +27,7 @@ export default () => {
             return;
           }
 
-          const curTenbou = checkTenbou(tenbou().trim());
-          if (curTenbou === null) {
-            return;
-          }
-
           setState("username", () => curUsername);
-          setState("tenbou", () => curTenbou);
           navigate(`/room/${curRoomName}`);
         }}
       >
@@ -50,15 +42,6 @@ export default () => {
           placeholder="房间名"
           value={roomName()}
           onInput={(e) => setRoomName(e.currentTarget.value)}
-        />
-        <input
-          class="rounded-sm border px-2 py-1"
-          placeholder="初始点棒数"
-          type="number"
-          step={100}
-          min={0}
-          value={tenbou()}
-          onInput={(e) => setTenbou(e.currentTarget.value)}
         />
         <button
           type="submit"

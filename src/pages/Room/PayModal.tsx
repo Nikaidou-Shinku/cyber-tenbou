@@ -1,11 +1,10 @@
 import { createEffect, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
-import { PayMsg } from "~/data/interfaces";
 import { state } from "~/state";
 import { calcPoint, checkTenbou } from "~/utils";
 
 interface PayModalProps {
-  topic: string;
+  roomName: string;
   username: string;
   closeModal: () => void;
 }
@@ -43,7 +42,7 @@ export default (props: PayModalProps) => {
 
   const [value, setValue] = createSignal("");
 
-  const pay = () => {
+  const pay = async () => {
     const raw = value().trim();
 
     const tenbou = checkTenbou(raw);
@@ -77,14 +76,29 @@ export default (props: PayModalProps) => {
         return;
       }
 
-      const payMsg: PayMsg = {
-        type: "pay",
-        from: username,
-        to: props.username,
-        value: tenbou,
-      };
+      const js = nc.jetstream();
+      const kv = await js.views.kv("tenbou");
 
-      nc.publish(props.topic, JSON.stringify(payMsg));
+      const self = await kv.get(`${props.roomName}.${username}`);
+      if (self === null) {
+        console.error(`Can not find player "${username}".`);
+        alert(`玩家 "${username}" 的点棒数据不存在。`);
+        return;
+      }
+      const selfTenbou = parseInt(self.string()) - tenbou;
+
+      const target = await kv.get(`${props.roomName}.${props.username}`);
+      if (target === null) {
+        console.error(`Can not find player "${props.username}".`);
+        alert(`玩家 "${props.username}" 的点棒数据不存在。`);
+        return;
+      }
+      const targetTenbou = parseInt(target.string()) + tenbou;
+
+      // FIXME: maybe meet concurrency problems, use diff messages to fix it!
+      await kv.put(`${props.roomName}.${props.username}`, `${targetTenbou}`);
+      await kv.put(`${props.roomName}.${username}`, `${selfTenbou}`);
+
       props.closeModal();
     }
   };
