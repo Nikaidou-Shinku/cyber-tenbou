@@ -1,34 +1,18 @@
-import { createEffect, createSignal } from "solid-js";
-import { Portal, Show } from "solid-js/web";
-import { JSONCodec } from "nats.ws";
-import { PayMsg } from "~/data/interfaces";
-import { checkTenbou } from "~/utils";
+import { createMemo, createSignal } from "solid-js";
+import { Show } from "solid-js/web";
 import { state } from "~/state";
+import PayModal from "./PayModal";
 
 interface PlayerProps {
-  container?: HTMLDivElement;
   topic: string;
   username: string;
   tenbou: number;
 }
 
-const sc = JSONCodec();
-
 export default (props: PlayerProps) => {
-  const [ref, setRef] = createSignal<HTMLInputElement>();
-
-  createEffect(() => {
-    const curRef = ref();
-
-    if (typeof curRef !== "undefined") {
-      curRef.focus();
-    }
-  });
-
   const [showPay, setShowPay] = createSignal(false);
-  const [value, setValue] = createSignal("");
 
-  const isSelf = () => {
+  const isSelf = createMemo(() => {
     const username = state.username;
 
     if (username === null) {
@@ -37,53 +21,7 @@ export default (props: PlayerProps) => {
     }
 
     return username === props.username;
-  };
-
-  const pay = () => {
-    const raw = value().trim();
-
-    const tenbou = checkTenbou(raw);
-    if (tenbou === null) {
-      return;
-    }
-
-    if (tenbou < 0) {
-      alert("喜欢偷点棒是吧😅");
-      return;
-    }
-
-    const ask = confirm(
-      `即将向 ${props.username} 支付 ${tenbou * 100} 点点棒，确认吗？`,
-    );
-
-    if (ask) {
-      const username = state.username;
-
-      if (username === null) {
-        console.warn("Please login first.");
-        alert("见鬼了。");
-        return;
-      }
-
-      const nc = state.server;
-
-      if (nc === null) {
-        console.error("Server was not connected.");
-        alert("出事了，连接服务器失败了。");
-        return;
-      }
-
-      const payMsg: PayMsg = {
-        type: "pay",
-        from: username,
-        to: props.username,
-        value: tenbou,
-      };
-
-      nc.publish(props.topic, sc.encode(payMsg));
-      setShowPay(false);
-    }
-  };
+  });
 
   return (
     <div
@@ -113,42 +51,11 @@ export default (props: PlayerProps) => {
         </Show>
       </div>
       <Show when={showPay()}>
-        <Portal mount={props.container}>
-          <div class="fixed bottom-0 left-0 right-0 top-0 flex items-center justify-center backdrop-blur-sm">
-            <form
-              class="flex w-4/5 max-w-5xl flex-col items-center space-y-6 rounded bg-white p-4 shadow"
-              onSubmit={(e) => {
-                e.preventDefault();
-                pay();
-              }}
-            >
-              <span class="text-xl">向 {props.username} 支付点棒</span>
-              <input
-                ref={setRef}
-                class="w-full rounded-sm border px-2 py-1"
-                placeholder="支付的点棒数"
-                type="number"
-                step={100}
-                min={0}
-                onInput={(e) => setValue(e.currentTarget.value)}
-              />
-              <div class="flex w-full justify-evenly">
-                <button
-                  class="rounded-sm bg-red-400 px-2 py-1 text-white shadow-sm transition-colors hover:bg-red-500 focus:bg-red-500 active:bg-red-600"
-                  type="submit"
-                >
-                  确认支付
-                </button>
-                <button
-                  class="rounded-sm bg-gray-400 px-2 py-1 text-white shadow-sm transition-colors hover:bg-gray-500 focus:bg-gray-500 active:bg-gray-600"
-                  onClick={() => setShowPay(false)}
-                >
-                  取消
-                </button>
-              </div>
-            </form>
-          </div>
-        </Portal>
+        <PayModal
+          username={props.username}
+          topic={props.topic}
+          closeModal={() => setShowPay(false)}
+        />
       </Show>
     </div>
   );
