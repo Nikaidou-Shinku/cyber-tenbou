@@ -1,6 +1,6 @@
 import { Show, onCleanup, onMount } from "solid-js";
 import { Portal } from "solid-js/web";
-import { Routes, Route } from "@solidjs/router";
+import { Route, Router } from "@solidjs/router";
 import { connect } from "nats.ws";
 import { setState, state } from "~/state";
 import { Home, Room } from "~/pages";
@@ -29,10 +29,10 @@ export default () => {
 
   return (
     <>
-      <Routes>
+      <Router>
         <Route path="/room/:name" component={Room} />
         <Route path="/" component={Home} />
-      </Routes>
+      </Router>
       <Portal>
         <div class="fixed right-2 top-2">
           <Show
