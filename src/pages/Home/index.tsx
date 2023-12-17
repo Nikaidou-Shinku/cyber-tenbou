@@ -1,11 +1,18 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { setState } from "~/state";
+import { setState, usePlayerState } from "~/state";
 
 export default () => {
   const navigate = useNavigate();
   const [username, setUsername] = createSignal("");
   const [roomName, setRoomName] = createSignal("");
+  const playerStateHandler = usePlayerState();
+  let playerState = playerStateHandler.getter();
+  // 设置历史记录
+  if (playerState !== null) {
+    setUsername(playerState.username);
+    setRoomName(playerState.room);
+  }
 
   return (
     <div class="flex h-[100dvh] flex-col items-center justify-center space-y-3 bg-gray-200">
@@ -28,6 +35,10 @@ export default () => {
           }
 
           setState("username", () => curUsername);
+
+          playerState = { username: curUsername, room: curRoomName };
+          playerStateHandler.setter(playerState);
+
           navigate(`/room/${curRoomName}`);
         }}
       >
