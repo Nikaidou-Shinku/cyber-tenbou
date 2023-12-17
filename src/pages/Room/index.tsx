@@ -3,6 +3,7 @@ import { createStore } from "solid-js/store";
 import { useNavigate, useParams } from "@solidjs/router";
 import { state } from "~/state";
 import Player from "./Player";
+import { textEncoder } from "~/utils";
 
 type PlayerList = Record<string, number>;
 
@@ -80,14 +81,14 @@ export default () => {
   return (
     <div class="flex h-[100dvh] flex-col items-center justify-center space-y-3 bg-gray-200">
       <div class="flex space-x-4">
-        <span class="text-2xl">Room {decodeURIComponent(params.name)}</span>
+        <span class="text-2xl">Room {textEncoder.decode(params.name)}</span>
       </div>
       <div class="w-4/5 max-w-5xl rounded bg-white p-4 shadow">
         <For each={Object.entries(players).sort(([_a, a], [_b, b]) => b - a)}>
           {([username, tenbou]) => (
             <Player
-              roomName={params.name.trim()}
-              username={username}
+              roomName={textEncoder.decode(params.name.trim())}
+              username={textEncoder.decode(username)}
               tenbou={tenbou}
             />
           )}

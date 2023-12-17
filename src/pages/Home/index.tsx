@@ -1,6 +1,7 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { setState, usePlayerState } from "~/state";
+import { textEncoder } from "~/utils";
 
 export default () => {
   const navigate = useNavigate();
@@ -34,12 +35,15 @@ export default () => {
             return;
           }
 
-          setState("username", () => curUsername);
-
           playerState = { username: curUsername, room: curRoomName };
           playerStateHandler.setter(playerState);
 
-          navigate(`/room/${curRoomName}`);
+          // 为中文字符编码
+          const encodedUsername = textEncoder.encode(curUsername);
+          const encodedRoomName = textEncoder.encode(curRoomName);
+
+          setState("username", () => encodedUsername);
+          navigate(`/room/${encodedRoomName}`);
         }}
       >
         <input
