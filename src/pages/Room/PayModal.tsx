@@ -1,10 +1,16 @@
 import { createEffect, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
 import { state } from "~/state";
-import { calcPoint, checkTenbou } from "~/utils";
+import { calcPoint, checkTenbou, textEncoder } from "~/utils";
 
 interface PayModalProps {
+  /**
+   * Encoded room name.
+   */
   roomName: string;
+  /**
+   * Encoded user name.
+   */
   username: string;
   closeModal: () => void;
 }
@@ -56,7 +62,9 @@ export default (props: PayModalProps) => {
     }
 
     const ask = confirm(
-      `即将向 ${props.username} 支付 ${tenbou * 100} 点点棒，确认吗？`,
+      `即将向 ${textEncoder.decode(props.username)} 支付 ${
+        tenbou * 100
+      } 点点棒，确认吗？`,
     );
 
     if (ask) {
@@ -107,7 +115,9 @@ export default (props: PayModalProps) => {
     <Portal>
       <div class="fixed bottom-0 left-0 right-0 top-0 flex items-center justify-center backdrop-blur-sm">
         <div class="flex w-4/5 max-w-5xl flex-col items-center space-y-2 rounded bg-white p-4 shadow">
-          <span class="text-xl">向 {props.username} 支付点棒</span>
+          <span class="text-xl">
+            向 {textEncoder.decode(props.username)} 支付点棒
+          </span>
           <div class="w-full border-b-2" />
           <form
             class="flex w-full flex-col items-center space-y-2"

@@ -87,8 +87,8 @@ export default () => {
         <For each={Object.entries(players).sort(([_a, a], [_b, b]) => b - a)}>
           {([username, tenbou]) => (
             <Player
-              roomName={textEncoder.decode(params.name.trim())}
-              username={textEncoder.decode(username)}
+              roomName={params.name.trim()}
+              username={username}
               tenbou={tenbou}
             />
           )}

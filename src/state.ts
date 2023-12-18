@@ -2,6 +2,9 @@ import { createStore } from "solid-js/store";
 import { NatsConnection } from "nats.ws";
 
 interface AppState {
+  /**
+   * 编码后的玩家用户名信息
+   */
   username: string | null;
   server: NatsConnection | null;
 }
