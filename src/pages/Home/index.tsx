@@ -1,11 +1,19 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { setState } from "~/state";
+import { setState, usePlayerState } from "~/state";
+import { textEncoder } from "~/utils";
 
 export default () => {
   const navigate = useNavigate();
   const [username, setUsername] = createSignal("");
   const [roomName, setRoomName] = createSignal("");
+  const playerStateHandler = usePlayerState();
+  let playerState = playerStateHandler.getter();
+  // 设置历史记录
+  if (playerState !== null) {
+    setUsername(playerState.username);
+    setRoomName(playerState.room);
+  }
 
   return (
     <div class="flex h-[100dvh] flex-col items-center justify-center space-y-3 bg-gray-200">
@@ -27,8 +35,15 @@ export default () => {
             return;
           }
 
-          setState("username", () => curUsername);
-          navigate(`/room/${curRoomName}`);
+          playerState = { username: curUsername, room: curRoomName };
+          playerStateHandler.setter(playerState);
+
+          // 为中文字符编码
+          const encodedUsername = textEncoder.encode(curUsername);
+          const encodedRoomName = textEncoder.encode(curRoomName);
+
+          setState("username", () => encodedUsername);
+          navigate(`/room/${encodedRoomName}`);
         }}
       >
         <input
