@@ -3,14 +3,16 @@ import { Show } from "solid-js/web";
 import { state } from "~/state";
 import PayModal from "./PayModal";
 import { textEncoder } from "~/utils";
+import { Room } from ".";
 
 interface PlayerProps {
   /**
-   * Encoded room name.
+   * 当前房间.
    */
-  roomName: string;
+  room: Room;
+
   /**
-   * Encoded user name.
+   * 编码后玩家名字.
    */
   username: string;
 
@@ -61,7 +63,7 @@ export default (props: PlayerProps) => {
       <Show when={showPay()}>
         <PayModal
           username={props.username}
-          roomName={props.roomName}
+          room={props.room}
           closeModal={() => setShowPay(false)}
         />
       </Show>
