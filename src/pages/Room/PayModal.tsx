@@ -1,11 +1,21 @@
 import { createEffect, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
 import { state } from "~/state";
-import { calcPoint, checkTenbou } from "~/utils";
+import { calcPoint, checkTenbou, textEncoder } from "~/utils";
+import { Room } from ".";
+import { PayRecord } from "~/data/PayRecord";
 
 interface PayModalProps {
-  roomName: string;
+  /**
+   * 当前房间.
+   */
+  room: Room;
+
+  /**
+   * 编码后玩家名字.
+   */
   username: string;
+
   closeModal: () => void;
 }
 
@@ -56,7 +66,9 @@ export default (props: PayModalProps) => {
     }
 
     const ask = confirm(
-      `即将向 ${props.username} 支付 ${tenbou * 100} 点点棒，确认吗？`,
+      `即将向 ${textEncoder.decode(props.username)} 支付 ${
+        tenbou * 100
+      } 点点棒，确认吗？`,
     );
 
     if (ask) {
@@ -68,36 +80,13 @@ export default (props: PayModalProps) => {
         return;
       }
 
-      const nc = state.server;
+      const record: PayRecord = {
+        payer: username,
+        receiver: props.username,
+        count: tenbou,
+      };
 
-      if (nc === null) {
-        console.error("Server was not connected.");
-        alert("出事了，连接服务器失败了。");
-        return;
-      }
-
-      const js = nc.jetstream();
-      const kv = await js.views.kv("tenbou");
-
-      const self = await kv.get(`${props.roomName}.${username}`);
-      if (self === null) {
-        console.error(`Can not find player "${username}".`);
-        alert(`玩家 "${username}" 的点棒数据不存在。`);
-        return;
-      }
-      const selfTenbou = parseInt(self.string()) - tenbou;
-
-      const target = await kv.get(`${props.roomName}.${props.username}`);
-      if (target === null) {
-        console.error(`Can not find player "${props.username}".`);
-        alert(`玩家 "${props.username}" 的点棒数据不存在。`);
-        return;
-      }
-      const targetTenbou = parseInt(target.string()) + tenbou;
-
-      // FIXME: maybe meet concurrency problems, use diff messages to fix it!
-      await kv.put(`${props.roomName}.${props.username}`, `${targetTenbou}`);
-      await kv.put(`${props.roomName}.${username}`, `${selfTenbou}`);
+      await props.room.add(record);
 
       props.closeModal();
     }
@@ -107,7 +96,9 @@ export default (props: PayModalProps) => {
     <Portal>
       <div class="fixed bottom-0 left-0 right-0 top-0 flex items-center justify-center backdrop-blur-sm">
         <div class="flex w-4/5 max-w-5xl flex-col items-center space-y-2 rounded bg-white p-4 shadow">
-          <span class="text-xl">向 {props.username} 支付点棒</span>
+          <span class="text-xl">
+            向 {textEncoder.decode(props.username)} 支付点棒
+          </span>
           <div class="w-full border-b-2" />
           <form
             class="flex w-full flex-col items-center space-y-2"

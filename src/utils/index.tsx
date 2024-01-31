@@ -85,3 +85,13 @@ export const calcPoint = (
     return null;
   }
 };
+
+// 编码解码相关
+export const textEncoder = {
+  encode: (content: string) => {
+    return btoa(encodeURIComponent(content));
+  },
+  decode: (content: string) => {
+    return decodeURIComponent(atob(content));
+  },
+};

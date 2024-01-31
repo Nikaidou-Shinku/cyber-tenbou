@@ -2,10 +2,20 @@ import { createMemo, createSignal } from "solid-js";
 import { Show } from "solid-js/web";
 import { state } from "~/state";
 import PayModal from "./PayModal";
+import { textEncoder } from "~/utils";
+import { Room } from ".";
 
 interface PlayerProps {
-  roomName: string;
+  /**
+   * 当前房间.
+   */
+  room: Room;
+
+  /**
+   * 编码后玩家名字.
+   */
   username: string;
+
   tenbou: number;
 }
 
@@ -39,7 +49,7 @@ export default (props: PlayerProps) => {
         <Show when={isSelf()}>
           <span class="mr-2">这是你☞</span>
         </Show>
-        <span>{props.username}</span>
+        <span>{textEncoder.decode(props.username)}</span>
       </div>
       <div classList={{ "text-red-500": props.tenbou < 0 }}>
         <span class="text-xl">{props.tenbou}</span>
@@ -53,7 +63,7 @@ export default (props: PlayerProps) => {
       <Show when={showPay()}>
         <PayModal
           username={props.username}
-          roomName={props.roomName}
+          room={props.room}
           closeModal={() => setShowPay(false)}
         />
       </Show>
